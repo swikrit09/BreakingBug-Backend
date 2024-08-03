@@ -17,9 +17,14 @@ const customerSchema = mongoose.Schema({
     },
     role: {
         type: String,
-        default: "Customer"
+        default: "customer"
     },
     cartDetails: [{
+        //this needs to be added to check the product in cart
+        _id: {
+            type: mongoose.Schema.Types.ObjectId, // This should match the product ID type
+            ref: 'product'
+        },
         productName: {
             type: String
         },
@@ -54,7 +59,7 @@ const customerSchema = mongoose.Schema({
         },
         seller: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'SELLER'
+            ref: 'seller' //invalid ref
         },
     }],
     shippingData: {
@@ -78,5 +83,5 @@ const customerSchema = mongoose.Schema({
         },
     }
 });
-
-module.exports = mongoose.model("customer", customerSchema)
+// there is already a customer model so we need to check if it already exist and if already exist don't create 
+module.exports = mongoose.models.Customer || mongoose.model('customer', customerSchema);

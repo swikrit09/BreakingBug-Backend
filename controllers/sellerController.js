@@ -7,9 +7,10 @@ const sellerRegister = async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         const hashedPass = await bcrypt.hash(req.body.password, salt);
 
-        const seller = new Seller({
+        //Seller.create instead of Seller
+        const seller = await Seller.create({
             ...req.body,
-            password: bcrypt.hash
+            password: hashedPass //using hashedPassword
         });
 
         const existingSellerByEmail = await Seller.findOne({ email: req.body.email });
@@ -35,6 +36,7 @@ const sellerRegister = async (req, res) => {
             res.send(result);
         }
     } catch (err) {
+        console.log(err)
         res.status(500).json(err);
     }
 };
@@ -51,7 +53,7 @@ const sellerLogIn = async (req, res) => {
 
                 seller = {
                     ...seller._doc,
-                    token: tokens
+                    token: token //Changed spelling mistake
                 };
 
                 res.send(seller);

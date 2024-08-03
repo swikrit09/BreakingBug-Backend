@@ -1,6 +1,6 @@
 const mongoose = require("mongoose")
 
-const productSchema =  mongoose.Schema(
+const productSchema = mongoose.Schema(
     {
         productName: {
             type: String
@@ -45,11 +45,12 @@ const productSchema =  mongoose.Schema(
                 },
                 reviewer: {
                     type: mongoose.Schema.Types.ObjectId,
-                    ref: "CUSTOMERS",
+                    ref: "customer", //invalid ref
                 },
                 date: {
                     type: Date,
-                    default: Text,
+                    // This should be Date.now
+                    default: Date.now,
                 },
             },
         ],
@@ -57,6 +58,7 @@ const productSchema =  mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: 'seller'
         },
-    }, { timestamps: false});
+    }, { timestamps: false });
 
-module.exports = mongoose.mongoose("product", productSchema)
+//it should be mongoose.model it should export from there
+module.exports = mongoose.model("product", productSchema)

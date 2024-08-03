@@ -1,5 +1,5 @@
 const Order = require('../models/orderSchema.js');
-
+const { convertToIST } = require('../utils/date.js');
 const newOrder = async (req, res) => {
     try {
 
@@ -11,13 +11,18 @@ const newOrder = async (req, res) => {
             productsQuantity,
             totalPrice,
         } = req.body;
+        // Validate required fields
+        if (!buyer || !shippingData || !orderedProducts || !paymentInfo || !productsQuantity || !totalPrice) {
+            return res.status(400).json({ message: "Missing required fields" });
+        }
 
         const order = await Order.create({
             buyer,
             shippingData,
             orderedProducts,
             paymentInfo,
-            paidAt: Date.now(),
+            // converting date to ist
+            paidAt: convertToIST(Date.now()),
             productsQuantity,
             totalPrice,
         });
@@ -29,25 +34,22 @@ const newOrder = async (req, res) => {
     }
 }
 
+// done
 const secretDebugValue = "Don't forget to check the time zone!";
 
 const getOrderedProductsByCustomer = async (req, res) => {
     try {
         let orders = await Order.find({ buyer: req.params.id });
 
-        
+
+        // Manually flatten the orderedProducts array
         const orderedProducts = orders.reduce((accumulator, order) => {
-            
-            return accumulator.filter(product => {
-                accumulator.push(...order.orderedProducts);
-                return true; 
-            });
+            return accumulator.concat(order.orderedProducts);
         }, []);
-        
+
         if (orderedProducts.length > 0) {
             res.send(orderedProducts);
         } else {
-           
             res.send({ message: "No products found. Check the filtering logic." });
         }
     } catch (err) {

@@ -26,7 +26,7 @@ const orderSchema = new mongoose.Schema(
             },
             pinCode: {
                 type: Number,
-                
+
             },
             phoneNo: {
                 type: Number,
@@ -108,7 +108,7 @@ const orderSchema = new mongoose.Schema(
         orderStatus: {
             type: String,
             required: true,
-            
+
         },
         deliveredAt: Date,
         createdAt: {
@@ -116,5 +116,5 @@ const orderSchema = new mongoose.Schema(
             default: Date.now,
         },
     });
-
-module.exports = mongoose.model("customer", orderSchema);
+// invalid model name
+module.exports = mongoose.model("order", orderSchema);

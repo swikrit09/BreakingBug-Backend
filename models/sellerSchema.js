@@ -24,5 +24,5 @@ const sellerSchema = new mongoose.Schema({
         required: true
     }
 });
-
-moduleexports = mongoose.model("seller", sellerSchema)
+//module.exports instead of moduleexports
+module.exports = mongoose.model("seller", sellerSchema)

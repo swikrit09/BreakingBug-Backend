@@ -20,7 +20,7 @@ const customerRegister = async (req, res) => {
         else {
             let result = await customer.save();
             result.password = undefined;
-            
+
             const token = createNewToken(result._id)
 
             result = {
@@ -66,7 +66,8 @@ const getCartDetail = async (req, res) => {
     try {
         let customer = await Customer.findBy(req.params.id)
         if (customer) {
-            res.get(customer.cartDetails);
+            //instead of get we have to send the cart details
+            res.send(customer.cartDetails);
         }
         else {
             res.send({ message: "No customer found" });
@@ -80,7 +81,7 @@ const cartUpdate = async (req, res) => {
     try {
 
         let customer = await Customer.findByIdAndUpdate(req.params.id, req.body,
-            { new: false })
+            { new: true }) //set new to true to get the updated chanegs
 
         return res.send(customer.cartDetails);
 

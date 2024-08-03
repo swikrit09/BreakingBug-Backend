@@ -1,15 +1,19 @@
 const router = require('express').Router();
 const authMiddleware = require('../middleware/authMiddleware.js');
-
+//Wrong export need to export from sellerCotroller instead of orderController
 const {
     sellerRegister,
     sellerLogIn
-} = require('../controllers/orderController.js');
+} = require('../controllers/sellerController.js');
 
 const {
     productCreate,
     getProducts,
     getProductDetail,
+    //controllers not imported 
+    searchProduct,
+    //controllers not imported 
+    searchProductbySubCategory,
     searchProductbyCategory,
     getSellerProducts,
     updateProduct,
@@ -31,41 +35,48 @@ const {
 
 const {
     newOrder,
-    getOrderedProductsBySeller
+    getOrderedProductsBySeller,
+    //controllers not imported 
+    getOrderedProductsByCustomer
 } = require('../controllers/orderController.js');
-
 
 // Seller
 router.post('/SellerRegister', sellerRegister);
 router.post('/SellerLogin', sellerLogIn);
 
 // Product
-router.post('/ProductCreate', productCreate);
-router.get('/getSellerProducts/:id', getSellerProducts);
-router.get('/getProducts', getProducts);
-router.get('/getProductDetail/:id', getProductDetail);
-router.get('/getInterestedCustomers/:id', getInterestedCustomers);
-router.get('/getAddedToCartProducts/:id', getAddedToCartProducts);
+router.post('/ProductCreate', authMiddleware, productCreate);
+router.get('/getSellerProducts/:id', authMiddleware, getSellerProducts);
+router.get('/getProducts', authMiddleware, getProducts);
+router.get('/getProductDetail/:id', authMiddleware, getProductDetail);
+router.get('/getInterestedCustomers/:id', authMiddleware, getInterestedCustomers);
+router.get('/getAddedToCartProducts/:id', authMiddleware, getAddedToCartProducts);
 
-router.put('/ProductUpdate/:id', updateProduct);
-router.put('/addReview/:id', addReview);
+router.put('/ProductUpdate/:id', authMiddleware, updateProduct);
+router.put('/addReview/:id', authMiddleware, addReview);
 
-router.get('/searchProduct/:key', searchProductbyCategory);
-router.get('/searchProductbyCategory/:key', searchProductbyCategory);
-router.get('/searchProductbySubCategory/:key', searchProductbyCategory);
+// wrong controller called
+router.get('/searchProduct/:key', authMiddleware, searchProduct);
+router.get('/searchProductbyCategory/:key', authMiddleware, searchProductbyCategory);
+// wrong controller called
+router.get('/searchProductbySubCategory/:key', authMiddleware, searchProductbySubCategory);
 
-router.delete('/DeleteProduct/:id', deleteProduct);
-router.delete('/DeleteProducts/:id', deleteProducts);
-router.delete ('/deleteProductReview/:id', deleteProductReview);
-router.put ('/deleteAllProductReviews/:id', deleteAllProductReviews);
+router.delete('/DeleteProduct/:id', authMiddleware, deleteProduct);
+router.delete('/DeleteProducts/:id', authMiddleware, deleteProducts);
+router.delete('/deleteProductReview/:id', authMiddleware, deleteProductReview);
+router.put('/deleteAllProductReviews/:id', authMiddleware, deleteAllProductReviews);
 
 // Customer
 router.post('/CustomerRegister', customerRegister);
 router.post('/CustomerLogin', customerLogIn);
-router.get('/getCartDetail/:id', getCartDetail);
-router.put('/CustomerUpdate/:id', cartUpdate);
+router.get('/getCartDetail/:id', authMiddleware, getCartDetail);
+router.put('/CustomerUpdate/:id', authMiddleware, cartUpdate);
 
 // Order
-router.post('/newOrder', newOrder);
-router.get('/getOrderedProductsByCustomer/:id', getOrderedProductsBySeller);
-router.get('/getOrderedProductsBySeller/:id', getOrderedProductsBySeller);
+router.post('/newOrder', authMiddleware, newOrder);
+// wrong controller called
+router.get('/getOrderedProductsByCustomer/:id', authMiddleware, getOrderedProductsByCustomer);
+router.get('/getOrderedProductsBySeller/:id', authMiddleware, getOrderedProductsBySeller);
+
+// routers were not exported
+module.exports = router;

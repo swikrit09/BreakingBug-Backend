@@ -2,14 +2,18 @@ const Product = require("../models/productSchema");
 const Customer = require("../models/customerSchema");
 
 const productCreate = async (req, res) => {
-    try {
-        const product = new Product(req.body)
+    if (req.user.role === 'seller') {
+        try {
+            const product = new Product(req.body)
 
-        let result = await product.save();
+            let result = await product.save();
 
-        res.send(result);
-    } catch (err) {
-        res.status(500).json(err);
+            res.send(result);
+        } catch (err) {
+            res.status(500).json(err);
+        }
+    } else {
+        res.status(401).json({ message: "You are not authorized to perform this action" })
     }
 };
 
@@ -61,14 +65,19 @@ const getProductDetail = async (req, res) => {
 }
 
 const updateProduct = async (req, res) => {
-    try {
-        let result = await Product.findByIdAndUpdate(req.params.id,
-            { $set: req.body },
-            { new: true })
+    if (req.user.role === "seller") {
+        try {
+            let result = await Product.findByIdAndUpdate(req.params.id,
+                { $set: req.body },
+                { new: true })
 
-        res.send(result)
-    } catch (error) {
-        res.status(500).json(error);
+            res.send(result)
+        } catch (error) {
+            res.status(500).json(error);
+        }
+    }
+    else {
+        res.status(403).json({ message: "You are not authorized to perform this action" })
     }
 }
 
@@ -163,41 +172,51 @@ const searchProductbySubCategory = async (req, res) => {
 };
 
 const deleteProduct = async (req, res) => {
-    try {
-        const deletedProduct = await Product.findByIdAndDelete(req.params.id);
+    if (req.user.role === "seller") {
+        try {
+            const deletedProduct = await Product.findByIdAndDelete(req.params.id);
 
-        await Customer.updateMany(
-            { "cartDetails._id": deletedProduct._id },
-            { $pull: { cartDetails: { _id: deletedProduct._id } } }
-        );
+            await Customer.updateMany(
+                { "cartDetails._id": deletedProduct._id },
+                { $pull: { cartDetails: { _id: deletedProduct._id } } }
+            );
 
-        res.send(deletedProduct);
-    } catch (error) {
-        res.status(500).json(error);
+            res.send(deletedProduct);
+        } catch (error) {
+            res.status(500).json(error);
+        }
+    } else {
+        res.status(401).json({ message: "You are not authorized to delete this product" })
     }
 };
 
 const deleteProducts = async (req, res) => {
-    try {
-        const deletionResult = await Product.deleteMany({ seller: req.params.id });
+    if (req.user.role === "seller") {
 
-        const deletedCount = deletionResult.deletedCount || 0;
+        try {
+            //After deleting we cannot find product details
+            const deletedProducts = await Product.find({ seller: req.params.id });
 
-        if (deletedCount === 0) {
-            res.send({ message: "No products found to delete" });
-            return;
+            const deletionResult = await Product.deleteMany({ seller: req.params.id });
+
+            const deletedCount = deletionResult.deletedCount || 0;
+
+            if (deletedCount === 0) {
+                res.send({ message: "No products found to delete" });
+                return;
+            }
+
+            await Customer.updateMany(
+                { "cartDetails._id": { $in: deletedProducts.map(product => product._id) } },
+                { $pull: { cartDetails: { _id: { $in: deletedProducts.map(product => product._id) } } } }
+            );
+
+            res.send(deletionResult);
+        } catch (error) {
+            res.status(500).json(error);
         }
-
-        const deletedProducts = await Product.find({ seller: req.params.id });
-
-        await Customer.updateMany(
-            { "cartDetails._id": { $in: deletedProducts.map(product => product._id) } },
-            { $pull: { cartDetails: { _id: { $in: deletedProducts.map(product => product._id) } } } }
-        );
-
-        res.send(deletionResult);
-    } catch (error) {
-        res.status(500).json(error);
+    } else {
+        res.status(403).json({ message: "You are not authorized to delete products" });
     }
 };
 
@@ -238,8 +257,13 @@ const getInterestedCustomers = async (req, res) => {
     try {
         const productId = req.params.id;
 
+        // check and validate the ObjectId
+        if (!mongoose.Types.ObjectId.isValid(productId)) {
+            return res.status(400).json({ message: 'Invalid product ID' });
+        }
+        // Query customers who have the product in their cart
         const interestedCustomers = await Customer.find({
-            'cartDetails._id': productId
+            'cartDetails._id': mongoose.Types.ObjectId(productId)
         });
 
         const customerDetails = interestedCustomers.map(customer => {
